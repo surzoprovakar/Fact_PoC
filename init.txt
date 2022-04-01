@@ -1,0 +1,27 @@
+% merge(replica_id, logical_time_clock, delta).
+merge(1, 1, 0.4).
+merge(1, 2, 0.8).
+merge(2, 2, 0.5).
+merge(3, 2, 0.4).
+merge(1, 3, 0.13).
+merge(1, 4, 0.2).
+merge(3, 4, 0.15).
+merge(2, 5, 0.11).
+merge(1, 5, 0.17).
+merge(3, 6, 0.8).
+merge(3, 7, 0.3).
+merge(2, 7, 0.9).
+merge(1, 8, 0.2).
+% we will accept a merge request if 
+% the average deltas from this replica were less than .4
+
+count_merges(R, Count) :- findall(R, merge(R, _, _), L), length(L, Count).
+
+totalDeltas(R, TotalD):-
+  findall(D, merge(R, _, D), Deltas),
+  sumlist(Deltas, TotalD).
+
+moreThanPercent(R, Percent) :- count_merges(R, TotalMerges), totalDeltas(R, TotalD),
+					      ((float(TotalD)/TotalMerges*100) < Percent).
+
+should_merge(R) :- moreThanPercent(R, 50).
